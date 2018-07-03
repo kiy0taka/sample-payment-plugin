@@ -103,6 +103,8 @@ class PaymentController extends AbstractController
         // purchaseFlow::rollbackを呼び出し, 購入処理をロールバックする.
         $this->purchaseFlow->rollback($Order, new PurchaseContext());
 
+        $this->entityManager->flush();
+
         return $this->redirectToRoute("shopping");
     }
 
@@ -125,6 +127,11 @@ class PaymentController extends AbstractController
         }
 
         $this->cartService->clear();
+
+        // FIXME 完了画面を表示するため, 受注IDをセッションに保持する
+        $this->session->set('eccube.front.shopping.order.id', $Order->getId());
+
+        $this->entityManager->flush();
 
         return $this->redirectToRoute("shopping_complete");
     }
@@ -157,6 +164,8 @@ class PaymentController extends AbstractController
 
         // purchaseFlow::commitを呼び出し, 購入処理を完了させる.
         $this->purchaseFlow->commit($Order, new PurchaseContext());
+
+        $this->entityManager->flush();
 
         return new Response("OK!!");
     }
